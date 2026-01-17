@@ -3,159 +3,132 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>For You ✨</title>
+    <title>A Special Journey ✨</title>
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Montserrat:wght@200;400;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
         :root {
-            --bg: #0a0a0a;
+            --bg: #050505;
             --accent: #d4af37; /* Elegant Gold */
             --text: #ffffff;
-            --glass: rgba(255, 255, 255, 0.03);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        body, html { background: var(--bg); color: var(--text); font-family: 'Montserrat', sans-serif; overflow: hidden; height: 100%; }
 
-        body, html {
-            background-color: var(--bg);
-            color: var(--text);
-            font-family: 'Montserrat', sans-serif;
-            overflow-x: hidden;
-            height: 100%;
-        }
-
-        /* --- Music Controller --- */
-        #music-btn {
-            position: fixed; top: 30px; right: 30px; z-index: 1000;
-            background: none; border: 1px solid var(--accent);
-            color: var(--accent); padding: 10px 20px; border-radius: 50px;
-            cursor: pointer; font-size: 11px; letter-spacing: 2px;
-            transition: 0.4s;
-        }
-
-        /* --- Cinematic Intro --- */
+        /* --- Intro Animation --- */
         #intro-screen {
-            height: 100vh; display: flex; flex-direction: column;
-            justify-content: center; align-items: center; text-align: center;
+            height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
         }
-
-        .fade-line {
-            opacity: 0; transform: translateY(30px);
-            transition: 2s cubic-bezier(0.22, 1, 0.36, 1);
-            margin: 10px 0; font-size: 1.5rem; font-weight: 200;
-        }
-
+        .fade-line { opacity: 0; transform: translateY(20px); transition: 2s ease; margin: 10px 0; font-size: 1.2rem; font-weight: 200; letter-spacing: 2px; }
         .fade-line.visible { opacity: 1; transform: translateY(0); }
-        .hinglish { font-family: 'Dancing Script', cursive; color: var(--accent); font-size: 2rem; }
 
-        /* --- Main Content --- */
-        #main-stage {
-            display: none; position: relative; width: 100vw; height: 100vh;
-        }
+        /* --- Main Stage --- */
+        #main-stage { display: none; height: 100vh; width: 100vw; position: relative; }
+        
+        canvas { position: absolute; top: 0; left: 0; z-index: 10; cursor: crosshair; touch-action: none; }
 
-        canvas {
-            position: fixed; top: 0; left: 0; z-index: 99;
-            cursor: crosshair; touch-action: none;
-        }
-
-        .story-wrapper {
-            position: relative; z-index: 10; width: 100%; max-width: 700px;
-            margin: 0 auto; padding: 150px 20px;
+        .story-container {
+            position: relative; z-index: 5; height: 100%; width: 100%;
+            display: flex; justify-content: center; align-items: center; padding: 20px;
         }
 
         .aesthetic-card {
-            background: var(--glass);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.1);
-            padding: 50px 30px; border-radius: 20px; margin-bottom: 150px;
-            opacity: 0; transform: scale(0.9); transition: 1.5s ease;
-            text-align: center;
+            display: none; max-width: 600px; text-align: center; animation: zoomIn 1.5s ease;
         }
 
-        .aesthetic-card.revealed { opacity: 1; transform: scale(1); }
+        .aesthetic-card h2 { font-size: 0.7rem; letter-spacing: 5px; color: var(--accent); margin-bottom: 25px; text-transform: uppercase; }
+        .aesthetic-card p { font-size: 1.5rem; line-height: 1.8; margin-bottom: 40px; font-weight: 200; }
 
-        .aesthetic-card h2 { 
-            font-size: 0.8rem; letter-spacing: 5px; color: var(--accent); 
-            text-transform: uppercase; margin-bottom: 25px; 
+        /* --- Interaction Button --- */
+        .next-btn {
+            background: none; border: 1px solid var(--accent); color: var(--accent);
+            padding: 12px 40px; border-radius: 50px; cursor: pointer;
+            font-size: 11px; letter-spacing: 3px; opacity: 0; transition: 1s;
         }
+        .next-btn.show { opacity: 1; }
+        .next-btn:hover { background: var(--accent); color: #000; box-shadow: 0 0 20px rgba(212, 175, 55, 0.4); }
 
-        .aesthetic-card p { 
-            font-size: 1.6rem; line-height: 1.6; font-weight: 300;
+        @keyframes zoomIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
         }
-
-        .final-wish { font-family: 'Dancing Script', cursive; font-size: 3rem !important; color: var(--accent); }
-
     </style>
 </head>
 <body>
 
-    <button id="music-btn" onclick="initiate()">TAP TO START ✨</button>
-    
-    <audio id="bg-audio" loop>
-        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" type="audio/mpeg">
-    </audio>
-
     <div id="intro-screen">
-        <div class="fade-line" id="l1">Some memories are <span class="hinglish">bohot special</span>...</div>
-        <div class="fade-line" id="l2">Like the ones we made together.</div>
-        <div class="fade-line" id="l3">So I built this <span class="hinglish">sirf tumhare liye</span>.</div>
-        <div class="fade-line" id="l4">Slowly scratch to reveal the stories.</div>
+        <div class="fade-line" id="l1">Wait a moment...</div>
+        <div class="fade-line" id="l2">I've gathered some memories for you.</div>
+        <button onclick="startExperience()" style="margin-top:40px; background:none; border:1px solid var(--accent); color:var(--accent); padding:12px 30px; cursor:pointer; border-radius:50px; font-size: 10px; letter-spacing: 2px;">BEGIN THE STORY ✨</button>
     </div>
 
     <div id="main-stage">
         <canvas id="scratch-layer"></canvas>
         
-        <div class="story-wrapper">
-            <div class="aesthetic-card">
+        <div class="story-container">
+            <div class="aesthetic-card" id="card-0">
                 <h2>Chapter I</h2>
-                <p>Remember when we first met? <br> <span class="hinglish">Wahi se sab shuru hua.</span></p>
+                <p>It’s rare to find a connection that feels this effortless. Thank you for being part of my life.</p>
+                <button class="next-btn" onclick="nextChapter(1)">NEXT CHAPTER ➔</button>
             </div>
 
-            <div class="aesthetic-card">
+            <div class="aesthetic-card" id="card-1">
                 <h2>Chapter II</h2>
-                <p>The inside jokes, the 3 AM talks... <br> <span class="hinglish">Sab yaad hai mujhe.</span></p>
+                <p>Through every high and low, you’ve been the most consistent person I know.</p>
+                <button class="next-btn" onclick="nextChapter(2)">THE FINAL PAGE ➔</button>
             </div>
 
-            <div class="aesthetic-card">
-                <h2>Chapter III</h2>
-                <p class="final-wish">Happy Birthday! 🎈</p>
-                <p style="font-size: 1rem; margin-top: 20px; opacity: 0.6;">
-                    Enjoy your day to the fullest. <br> You deserve all the happiness.
-                </p>
+            <div class="aesthetic-card" id="card-2">
+                <h2 style="font-family:'Dancing Script', cursive; font-size: 3.5rem; text-transform: none;">Happy Birthday!</h2>
+                <p>May this year bring you as much joy as you give to everyone around you. 🎈</p>
+                <div style="font-size: 0.7rem; opacity: 0.5; margin-top: 20px;">Designed with care.</div>
             </div>
         </div>
     </div>
 
+    <audio id="bg-audio" loop src="YOUR_UPLOADED_MUSIC_LINK_HERE.mp3"></audio>
+
     <script>
+        let currentChapter = 0;
         const audio = document.getElementById('bg-audio');
-        const btn = document.getElementById('music-btn');
 
-        function initiate() {
+        function startExperience() {
             audio.play();
-            btn.style.display = 'none';
+            document.getElementById('l1').classList.add('visible');
+            setTimeout(() => document.getElementById('l2').classList.add('visible'), 1500);
             
-            // Intro Animation Sequence
-            const lines = ['l1', 'l2', 'l3', 'l4'];
-            lines.forEach((id, i) => {
-                setTimeout(() => {
-                    document.getElementById(id).classList.add('visible');
-                }, i * 1800);
-            });
-
-            // Transition to Scratch Phase
             setTimeout(() => {
                 document.getElementById('intro-screen').style.opacity = '0';
-                document.getElementById('intro-screen').style.transition = '2s';
-                setTimeout(showStories, 2000);
-            }, 8500);
+                document.getElementById('intro-screen').style.transition = '1.5s';
+                setTimeout(() => {
+                    document.getElementById('intro-screen').style.display = 'none';
+                    document.getElementById('main-stage').style.display = 'block';
+                    loadChapter(0);
+                }, 1500);
+            }, 5000);
         }
 
-        function showStories() {
-            document.getElementById('intro-screen').style.display = 'none';
-            document.getElementById('main-stage').style.display = 'block';
+        function loadChapter(index) {
+            currentChapter = index;
             setupScratch();
+            const cards = document.querySelectorAll('.aesthetic-card');
+            cards.forEach(c => c.style.display = 'none');
+            const activeCard = document.getElementById(`card-${index}`);
+            activeCard.style.display = 'block';
+        }
+
+        function nextChapter(index) {
+            if(index === 2) {
+                confetti({ 
+                    particleCount: 150, 
+                    spread: 80, 
+                    origin: { y: 0.6 },
+                    colors: ['#d4af37', '#ffffff'] 
+                });
+            }
+            loadChapter(index);
         }
 
         function setupScratch() {
@@ -164,62 +137,43 @@
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
 
-            // Aesthetic Gray Silk Overlay
-            ctx.fillStyle = '#151515';
+            // Matte Black Overlay
+            ctx.fillStyle = '#111111';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            // Subtle instruction
-            ctx.font = "12px Montserrat";
-            ctx.fillStyle = "#444";
+            // Subtle Help Text
+            ctx.font = "10px Montserrat";
+            ctx.fillStyle = "#333";
             ctx.textAlign = "center";
-            ctx.fillText("ERASE THE VENEER", canvas.width/2, canvas.height/2);
+            ctx.fillText("SCRATCH TO REVEAL", canvas.width/2, canvas.height - 50);
 
             let isDrawing = false;
+            let scratchedAmount = 0;
 
             function scratch(e) {
                 if (!isDrawing) return;
-                const x = (e.clientX || (e.touches && e.touches[0].clientX));
-                const y = (e.clientY || (e.touches && e.touches[0].clientY));
+                const x = e.clientX || (e.touches && e.touches[0].clientX);
+                const y = e.clientY || (e.touches && e.touches[0].clientY);
 
                 ctx.globalCompositeOperation = 'destination-out';
                 ctx.beginPath();
                 ctx.arc(x, y, 60, 0, Math.PI * 2);
                 ctx.fill();
                 
-                // Animate cards as they appear
-                document.querySelectorAll('.aesthetic-card').forEach(card => {
-                    const rect = card.getBoundingClientRect();
-                    if(rect.top < window.innerHeight * 0.75) {
-                        card.classList.add('revealed');
-                    }
-                });
-
-                // Confetti on last card
-                const lastCard = document.querySelector('.aesthetic-card:last-child');
-                if(lastCard.classList.contains('revealed')) {
-                    triggerConfetti();
+                scratchedAmount++;
+                // Show button after they reveal the text
+                if(scratchedAmount > 40) { 
+                    const btn = document.querySelector(`#card-${currentChapter} .next-btn`);
+                    if(btn) btn.classList.add('show');
                 }
             }
 
-            canvas.addEventListener('mousedown', () => isDrawing = true);
-            canvas.addEventListener('mouseup', () => isDrawing = false);
-            canvas.addEventListener('mousemove', scratch);
-            canvas.addEventListener('touchstart', () => isDrawing = true);
-            canvas.addEventListener('touchend', () => isDrawing = false);
-            canvas.addEventListener('touchmove', scratch);
-        }
-
-        let confettiFired = false;
-        function triggerConfetti() {
-            if(!confettiFired) {
-                confetti({
-                    particleCount: 150,
-                    spread: 70,
-                    origin: { y: 0.6 },
-                    colors: ['#d4af37', '#ffffff', '#aa8d2d']
-                });
-                confettiFired = true;
-            }
+            canvas.onmousedown = () => isDrawing = true;
+            canvas.onmouseup = () => isDrawing = false;
+            canvas.onmousemove = scratch;
+            canvas.ontouchstart = () => isDrawing = true;
+            canvas.ontouchend = () => isDrawing = false;
+            canvas.ontouchmove = scratch;
         }
     </script>
 </body>
