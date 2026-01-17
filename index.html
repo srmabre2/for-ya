@@ -3,122 +3,161 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RESTRICTED ACCESS</title>
+    <title>SECURE FILE: BIRTHDAY_SURPRISE</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
-        body, html { margin: 0; padding: 0; background: #000; color: #0f0; font-family: 'Courier New', Courier, monospace; overflow: hidden; height: 100%; }
+        body, html { margin: 0; padding: 0; background: #000; color: #0f0; font-family: 'Courier New', monospace; overflow: hidden; height: 100%; }
 
-        /* --- Terminal Phase --- */
-        #terminal { padding: 20px; font-size: 1.2rem; display: block; }
-        .cursor { display: inline-block; width: 10px; height: 20px; background: #0f0; animation: blink 1s infinite; }
-        @keyframes blink { 50% { opacity: 0; } }
+        /* Music Control */
+        #music-control {
+            position: fixed; top: 20px; right: 20px; z-index: 100;
+            background: rgba(0, 255, 0, 0.2); border: 1px solid #0f0;
+            color: #0f0; padding: 10px; cursor: pointer; border-radius: 5px;
+        }
 
-        /* --- Scratch Phase --- */
+        /* Terminal Phase */
+        #terminal { padding: 40px; font-size: 1.2rem; display: block; height: 100vh; overflow-y: auto; }
+        .typing-text { margin-bottom: 10px; border-right: 2px solid #0f0; white-space: nowrap; overflow: hidden; animation: typing 2s steps(40, end), blink .75s step-end infinite; }
+        
+        @keyframes typing { from { width: 0 } to { width: 100% } }
+        @keyframes blink { from, to { border-color: transparent } 50% { border-color: #0f0 } }
+
+        /* Scratch Phase */
         #scratch-container {
-            display: none;
-            position: relative;
-            width: 100vw;
-            height: 100vh;
-            justify-content: center;
-            align-items: center;
-            background: #111;
+            display: none; position: relative; width: 100vw; height: 100vh;
+            justify-content: center; align-items: center; background: #050505;
         }
 
         .content-behind {
-            position: absolute;
-            text-align: center;
-            color: white;
-            z-index: 1;
-            padding: 20px;
+            position: absolute; text-align: center; color: white; z-index: 1; padding: 20px;
+            max-width: 800px;
         }
 
-        .content-behind h1 { font-size: 3rem; color: #ff3e60; text-shadow: 0 0 10px #ff3e60; }
-        .content-behind p { font-size: 1.5rem; max-width: 600px; }
-
-        canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 2;
-            cursor: crosshair;
-            touch-action: none; /* Critical for mobile */
+        /* Animated Story Styles */
+        .story-item {
+            opacity: 0; transform: translateY(20px); transition: all 1s ease;
+            margin-bottom: 30px; border-left: 3px solid #0f0; padding-left: 15px; text-align: left;
         }
+        .story-item.reveal { opacity: 1; transform: translateY(0); }
+        .story-item h3 { color: #0f0; margin-bottom: 5px; }
+
+        canvas { position: absolute; top: 0; left: 0; z-index: 2; cursor: crosshair; touch-action: none; }
     </style>
 </head>
 <body>
 
+    <button id="music-control">🔈 Start Experience</button>
+    
+    <audio id="bg-music" loop>
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+    </audio>
+
     <div id="terminal">
         <div id="log"></div>
-        <span class="cursor"></span>
     </div>
 
     <div id="scratch-container">
-        <div class="content-behind">
-            <h1>DECRYPTED! 🎉</h1>
-            <p><strong>[Your Story Here]</strong></p>
-            <p>"Remember that time we hacked the pizza place? Just kidding. Happy Birthday to my favorite human."</p>
-            <p><em>(Add your inside jokes here!)</em></p>
-        </div>
+        <div class="content-behind" id="story-wall">
+            <h1 style="color: #0f0; font-size: 2.5rem; margin-bottom: 40px;">[DATA DECRYPTED]</h1>
+            
+            <div class="story-item">
+                <h3>STORY_01: The Beginning</h3>
+                <p>Remember when we first met at that coffee shop and I spilled my drink? Good times.</p>
+            </div>
+
+            <div class="story-item">
+                <h3>STORY_02: The Inside Joke</h3>
+                <p>"The Blue Umbrella." No one else gets it, and that's the best part.</p>
+            </div>
+
+            <div class="story-item">
+                <h3>STORY_03: A Promise</h3>
+                <p>Happy Birthday! Here's to 100 more adventures together.</p>
+            </div>
+            </div>
         <canvas id="scratchCanvas"></canvas>
     </div>
 
     <script>
+        const music = document.getElementById('bg-music');
+        const musicBtn = document.getElementById('music-control');
         const logElement = document.getElementById('log');
-        const messages = [
-            "> INITIALIZING SURPRISE PROTOCOL...",
-            "> BYPASSING SECURITY...",
-            "> ACCESSING PRIVATE MEMORIES...",
-            "> DECRYPTING INSIDE JOKES...",
-            "> ACCESS GRANTED.",
-            "> USE MOUSE/FINGER TO REVEAL MESSAGE..."
+
+        // Toggle Music and Start Intro
+        musicBtn.addEventListener('click', () => {
+            if (music.paused) {
+                music.play();
+                musicBtn.textContent = "🔊 Music On";
+                startTerminal();
+            }
+        });
+
+        const terminalMessages = [
+            "CONNECTING TO SECURE_SERVER_B-DAY...",
+            "LOGIN: USER_FRIEND",
+            "PASSWORD: ****************",
+            "AUTHENTICATING...",
+            "ACCESS GRANTED.",
+            "WARNING: MEMORY OVERLOAD DETECTED...",
+            "OPENING FILE: 'LIFE_WITHOUT_YOU_WOULD_SUCK.pdf'..."
         ];
 
-        let msgIndex = 0;
-        function typeLog() {
-            if (msgIndex < messages.length) {
-                let p = document.createElement('p');
-                p.textContent = messages[msgIndex];
-                logElement.appendChild(p);
-                msgIndex++;
-                setTimeout(typeLog, 800);
-            } else {
-                setTimeout(startScratchPhase, 1000);
-            }
+        function startTerminal() {
+            musicBtn.style.opacity = "0.3";
+            let i = 0;
+            const interval = setInterval(() => {
+                if (i < terminalMessages.length) {
+                    const p = document.createElement('p');
+                    p.className = "typing-text";
+                    p.textContent = "> " + terminalMessages[i];
+                    logElement.appendChild(p);
+                    i++;
+                } else {
+                    clearInterval(interval);
+                    setTimeout(initScratchPhase, 1500);
+                }
+            }, 1200);
         }
 
-        function startScratchPhase() {
+        function initScratchPhase() {
             document.getElementById('terminal').style.display = 'none';
             document.getElementById('scratch-container').style.display = 'flex';
-            initScratch();
-        }
-
-        function initScratch() {
+            
             const canvas = document.getElementById('scratchCanvas');
             const ctx = canvas.getContext('2d');
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
 
-            // Fill canvas with "Hacker" fog
-            ctx.fillStyle = '#1a1a1a';
+            // Cover with "Digital Dust"
+            ctx.fillStyle = '#111';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            // Add some "glitchy" text on top of the fog
-            ctx.font = "20px Courier New";
+            ctx.font = "bold 20px Courier New";
             ctx.fillStyle = "#0f0";
             ctx.textAlign = "center";
-            ctx.fillText("ERASE TO REVEAL", canvas.width/2, canvas.height/2);
+            ctx.fillText("ERASE TO DECRYPT MEMORIES", canvas.width/2, canvas.height/2);
 
             let isDrawing = false;
 
             function scratch(e) {
                 if (!isDrawing) return;
-                const rect = canvas.getBoundingClientRect();
-                const x = (e.clientX || e.touches[0].clientX) - rect.left;
-                const y = (e.clientY || e.touches[0].clientY) - rect.top;
+                const x = (e.clientX || e.touches[0].clientX);
+                const y = (e.clientY || e.touches[0].clientY);
 
                 ctx.globalCompositeOperation = 'destination-out';
                 ctx.beginPath();
-                ctx.arc(x, y, 50, 0, Math.PI * 2);
+                ctx.arc(x, y, 60, 0, Math.PI * 2);
                 ctx.fill();
+                
+                // Reveal story items as they scratch
+                checkReveal();
+            }
+
+            // Reveal animation for stories
+            function checkReveal() {
+                const stories = document.querySelectorAll('.story-item');
+                stories.forEach((s, index) => {
+                    setTimeout(() => { s.classList.add('reveal'); }, index * 400);
+                });
             }
 
             canvas.addEventListener('mousedown', () => isDrawing = true);
@@ -128,8 +167,6 @@
             canvas.addEventListener('touchend', () => isDrawing = false);
             canvas.addEventListener('touchmove', scratch);
         }
-
-        typeLog();
     </script>
 </body>
 </html>
