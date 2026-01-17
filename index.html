@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RESTRICTED ACCESS</title>
+    <style>
+        body, html { margin: 0; padding: 0; background: #000; color: #0f0; font-family: 'Courier New', Courier, monospace; overflow: hidden; height: 100%; }
+
+        /* --- Terminal Phase --- */
+        #terminal { padding: 20px; font-size: 1.2rem; display: block; }
+        .cursor { display: inline-block; width: 10px; height: 20px; background: #0f0; animation: blink 1s infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        /* --- Scratch Phase --- */
+        #scratch-container {
+            display: none;
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            justify-content: center;
+            align-items: center;
+            background: #111;
+        }
+
+        .content-behind {
+            position: absolute;
+            text-align: center;
+            color: white;
+            z-index: 1;
+            padding: 20px;
+        }
+
+        .content-behind h1 { font-size: 3rem; color: #ff3e60; text-shadow: 0 0 10px #ff3e60; }
+        .content-behind p { font-size: 1.5rem; max-width: 600px; }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 2;
+            cursor: crosshair;
+            touch-action: none; /* Critical for mobile */
+        }
+    </style>
+</head>
+<body>
+
+    <div id="terminal">
+        <div id="log"></div>
+        <span class="cursor"></span>
+    </div>
+
+    <div id="scratch-container">
+        <div class="content-behind">
+            <h1>DECRYPTED! 🎉</h1>
+            <p><strong>[Your Story Here]</strong></p>
+            <p>"Remember that time we hacked the pizza place? Just kidding. Happy Birthday to my favorite human."</p>
+            <p><em>(Add your inside jokes here!)</em></p>
+        </div>
+        <canvas id="scratchCanvas"></canvas>
+    </div>
+
+    <script>
+        const logElement = document.getElementById('log');
+        const messages = [
+            "> INITIALIZING SURPRISE PROTOCOL...",
+            "> BYPASSING SECURITY...",
+            "> ACCESSING PRIVATE MEMORIES...",
+            "> DECRYPTING INSIDE JOKES...",
+            "> ACCESS GRANTED.",
+            "> USE MOUSE/FINGER TO REVEAL MESSAGE..."
+        ];
+
+        let msgIndex = 0;
+        function typeLog() {
+            if (msgIndex < messages.length) {
+                let p = document.createElement('p');
+                p.textContent = messages[msgIndex];
+                logElement.appendChild(p);
+                msgIndex++;
+                setTimeout(typeLog, 800);
+            } else {
+                setTimeout(startScratchPhase, 1000);
+            }
+        }
+
+        function startScratchPhase() {
+            document.getElementById('terminal').style.display = 'none';
+            document.getElementById('scratch-container').style.display = 'flex';
+            initScratch();
+        }
+
+        function initScratch() {
+            const canvas = document.getElementById('scratchCanvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            // Fill canvas with "Hacker" fog
+            ctx.fillStyle = '#1a1a1a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Add some "glitchy" text on top of the fog
+            ctx.font = "20px Courier New";
+            ctx.fillStyle = "#0f0";
+            ctx.textAlign = "center";
+            ctx.fillText("ERASE TO REVEAL", canvas.width/2, canvas.height/2);
+
+            let isDrawing = false;
+
+            function scratch(e) {
+                if (!isDrawing) return;
+                const rect = canvas.getBoundingClientRect();
+                const x = (e.clientX || e.touches[0].clientX) - rect.left;
+                const y = (e.clientY || e.touches[0].clientY) - rect.top;
+
+                ctx.globalCompositeOperation = 'destination-out';
+                ctx.beginPath();
+                ctx.arc(x, y, 50, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            canvas.addEventListener('mousedown', () => isDrawing = true);
+            canvas.addEventListener('mouseup', () => isDrawing = false);
+            canvas.addEventListener('mousemove', scratch);
+            canvas.addEventListener('touchstart', () => isDrawing = true);
+            canvas.addEventListener('touchend', () => isDrawing = false);
+            canvas.addEventListener('touchmove', scratch);
+        }
+
+        typeLog();
+    </script>
+</body>
+</html>
