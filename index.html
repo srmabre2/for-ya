@@ -3,131 +3,177 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>A Special Journey ✨</title>
+    <title>Our Story ✨</title>
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600&family=Montserrat:wght@200;400;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
         :root {
-            --bg: #050505;
-            --accent: #d4af37; /* Elegant Gold */
+            --bg: #000000;
+            --accent: #d4af37;
             --text: #ffffff;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body, html { background: var(--bg); color: var(--text); font-family: 'Montserrat', sans-serif; overflow: hidden; height: 100%; }
 
-        /* --- Intro Animation --- */
-        #intro-screen {
-            height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+        /* --- Audio Control --- */
+        #music-wrap {
+            position: fixed; top: 30px; right: 30px; z-index: 1000;
+            display: flex; align-items: center; gap: 10px;
         }
-        .fade-line { opacity: 0; transform: translateY(20px); transition: 2s ease; margin: 10px 0; font-size: 1.2rem; font-weight: 200; letter-spacing: 2px; }
+        #music-btn {
+            background: none; border: 1px solid var(--accent); color: var(--accent);
+            padding: 8px 15px; border-radius: 50px; cursor: pointer; font-size: 10px; letter-spacing: 2px;
+        }
+
+        /* --- Intro Screen --- */
+        #intro-screen {
+            height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; 
+            text-align: center; z-index: 2000; position: relative; background: var(--bg);
+        }
+        .fade-line { opacity: 0; transform: translateY(20px); transition: 2s ease; margin: 10px 0; font-size: 1.2rem; font-weight: 200; }
         .fade-line.visible { opacity: 1; transform: translateY(0); }
 
         /* --- Main Stage --- */
         #main-stage { display: none; height: 100vh; width: 100vw; position: relative; }
         
-        canvas { position: absolute; top: 0; left: 0; z-index: 10; cursor: crosshair; touch-action: none; }
+        canvas { position: absolute; top: 0; left: 0; z-index: 100; cursor: crosshair; touch-action: none; }
+
+        .chapter-bg {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-size: cover; background-position: center;
+            transition: transform 8s linear, opacity 2s ease;
+            transform: scale(1.1); opacity: 0; z-index: 1;
+        }
+        .chapter-bg.active { opacity: 0.6; transform: scale(1); }
 
         .story-container {
-            position: relative; z-index: 5; height: 100%; width: 100%;
+            position: relative; z-index: 50; height: 100%; width: 100%;
             display: flex; justify-content: center; align-items: center; padding: 20px;
         }
 
         .aesthetic-card {
-            display: none; max-width: 600px; text-align: center; animation: zoomIn 1.5s ease;
+            display: none; max-width: 600px; text-align: center; 
+            background: rgba(0,0,0,0.4); padding: 40px; border-radius: 20px;
+            backdrop-filter: blur(5px); animation: fadeIn 2s ease;
         }
 
-        .aesthetic-card h2 { font-size: 0.7rem; letter-spacing: 5px; color: var(--accent); margin-bottom: 25px; text-transform: uppercase; }
-        .aesthetic-card p { font-size: 1.5rem; line-height: 1.8; margin-bottom: 40px; font-weight: 200; }
+        .aesthetic-card h2 { font-size: 0.7rem; letter-spacing: 5px; color: var(--accent); margin-bottom: 20px; }
+        .aesthetic-card p { font-size: 1.5rem; line-height: 1.6; margin-bottom: 30px; font-weight: 300; }
 
-        /* --- Interaction Button --- */
         .next-btn {
             background: none; border: 1px solid var(--accent); color: var(--accent);
-            padding: 12px 40px; border-radius: 50px; cursor: pointer;
-            font-size: 11px; letter-spacing: 3px; opacity: 0; transition: 1s;
+            padding: 12px 35px; border-radius: 50px; cursor: pointer;
+            font-size: 11px; letter-spacing: 2px; opacity: 0; transition: 1s;
         }
         .next-btn.show { opacity: 1; }
-        .next-btn:hover { background: var(--accent); color: #000; box-shadow: 0 0 20px rgba(212, 175, 55, 0.4); }
 
-        @keyframes zoomIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
-        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
 
+    <div id="music-wrap">
+        <button id="music-btn" onclick="toggleMusic()">MUSIC: OFF</button>
+    </div>
+
+    <audio id="bg-audio" loop>
+        <source src="YOUR_DIRECT_MUSIC_LINK_HERE.mp3" type="audio/mpeg">
+    </audio>
+
     <div id="intro-screen">
-        <div class="fade-line" id="l1">Wait a moment...</div>
-        <div class="fade-line" id="l2">I've gathered some memories for you.</div>
-        <button onclick="startExperience()" style="margin-top:40px; background:none; border:1px solid var(--accent); color:var(--accent); padding:12px 30px; cursor:pointer; border-radius:50px; font-size: 10px; letter-spacing: 2px;">BEGIN THE STORY ✨</button>
+        <div class="fade-line" id="l1">Every picture tells a story...</div>
+        <div class="fade-line" id="l2">And ours is my favorite.</div>
+        <button onclick="startExperience()" style="margin-top:40px; background:none; border:1px solid #fff; color:#fff; padding:12px 30px; cursor:pointer; border-radius:50px; font-size: 10px;">ENTER THE EXPERIENCE ✨</button>
     </div>
 
     <div id="main-stage">
         <canvas id="scratch-layer"></canvas>
         
+        <div id="bg-0" class="chapter-bg" style="background-image: url('YOUR_IMAGE_1.jpg');"></div>
+        <div id="bg-1" class="chapter-bg" style="background-image: url('YOUR_IMAGE_2.jpg');"></div>
+        <div id="bg-2" class="chapter-bg" style="background-image: url('YOUR_IMAGE_3.jpg');"></div>
+        <div id="bg-3" class="chapter-bg" style="background-image: url('YOUR_IMAGE_4.jpg');"></div>
+        <div id="bg-4" class="chapter-bg" style="background-image: url('YOUR_IMAGE_5.jpg');"></div>
+
         <div class="story-container">
             <div class="aesthetic-card" id="card-0">
                 <h2>Chapter I</h2>
-                <p>It’s rare to find a connection that feels this effortless. Thank you for being part of my life.</p>
+                <p>The moment everything started. Looking back, I had no idea how much you would mean to me.</p>
                 <button class="next-btn" onclick="nextChapter(1)">NEXT CHAPTER ➔</button>
             </div>
 
             <div class="aesthetic-card" id="card-1">
                 <h2>Chapter II</h2>
-                <p>Through every high and low, you’ve been the most consistent person I know.</p>
-                <button class="next-btn" onclick="nextChapter(2)">THE FINAL PAGE ➔</button>
+                <p>We’ve shared so many laughs and survived so many chaotic moments together.</p>
+                <button class="next-btn" onclick="nextChapter(2)">CONTINUE ➔</button>
             </div>
 
             <div class="aesthetic-card" id="card-2">
-                <h2 style="font-family:'Dancing Script', cursive; font-size: 3.5rem; text-transform: none;">Happy Birthday!</h2>
-                <p>May this year bring you as much joy as you give to everyone around you. 🎈</p>
-                <div style="font-size: 0.7rem; opacity: 0.5; margin-top: 20px;">Designed with care.</div>
+                <h2>Chapter III</h2>
+                <p>I hope you know how much I appreciate your presence in my life every single day.</p>
+                <button class="next-btn" onclick="nextChapter(3)">NEXT ➔</button>
+            </div>
+
+            <div class="aesthetic-card" id="card-3">
+                <h2>Chapter IV</h2>
+                <p>You’re not just a friend; you are someone I can always count on, no matter what.</p>
+                <button class="next-btn" onclick="nextChapter(4)">THE FINAL PAGE ➔</button>
+            </div>
+
+            <div class="aesthetic-card" id="card-4">
+                <h2 style="font-family:'Dancing Script', cursive; font-size: 3rem; text-transform:none;">Happy Birthday!</h2>
+                <p>To many more years of adventure, growth, and endless memories. 🎈</p>
             </div>
         </div>
     </div>
 
-    <audio id="bg-audio" loop src="YOUR_UPLOADED_MUSIC_LINK_HERE.mp3"></audio>
-
     <script>
         let currentChapter = 0;
         const audio = document.getElementById('bg-audio');
+        const mBtn = document.getElementById('music-btn');
+
+        function toggleMusic() {
+            if (audio.paused) {
+                audio.play();
+                mBtn.textContent = "MUSIC: ON";
+            } else {
+                audio.pause();
+                mBtn.textContent = "MUSIC: OFF";
+            }
+        }
 
         function startExperience() {
-            audio.play();
+            if(audio.paused) toggleMusic();
             document.getElementById('l1').classList.add('visible');
             setTimeout(() => document.getElementById('l2').classList.add('visible'), 1500);
-            
             setTimeout(() => {
                 document.getElementById('intro-screen').style.opacity = '0';
-                document.getElementById('intro-screen').style.transition = '1.5s';
                 setTimeout(() => {
                     document.getElementById('intro-screen').style.display = 'none';
                     document.getElementById('main-stage').style.display = 'block';
                     loadChapter(0);
-                }, 1500);
-            }, 5000);
+                }, 1000);
+            }, 4500);
         }
 
         function loadChapter(index) {
             currentChapter = index;
             setupScratch();
-            const cards = document.querySelectorAll('.aesthetic-card');
-            cards.forEach(c => c.style.display = 'none');
+            
+            // Handle Backgrounds
+            document.querySelectorAll('.chapter-bg').forEach(bg => bg.classList.remove('active'));
+            document.getElementById(`bg-${index}`).classList.add('active');
+
+            // Handle Cards
+            document.querySelectorAll('.aesthetic-card').forEach(c => c.style.display = 'none');
             const activeCard = document.getElementById(`card-${index}`);
             activeCard.style.display = 'block';
         }
 
         function nextChapter(index) {
-            if(index === 2) {
-                confetti({ 
-                    particleCount: 150, 
-                    spread: 80, 
-                    origin: { y: 0.6 },
-                    colors: ['#d4af37', '#ffffff'] 
-                });
-            }
+            if(index === 4) confetti({ particleCount: 200, spread: 90, origin: { y: 0.6 } });
             loadChapter(index);
         }
 
@@ -137,32 +183,23 @@
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
 
-            // Matte Black Overlay
-            ctx.fillStyle = '#111111';
+            ctx.fillStyle = '#111'; 
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            // Subtle Help Text
-            ctx.font = "10px Montserrat";
-            ctx.fillStyle = "#333";
-            ctx.textAlign = "center";
-            ctx.fillText("SCRATCH TO REVEAL", canvas.width/2, canvas.height - 50);
-
             let isDrawing = false;
-            let scratchedAmount = 0;
+            let scratched = 0;
 
             function scratch(e) {
                 if (!isDrawing) return;
-                const x = e.clientX || (e.touches && e.touches[0].clientX);
-                const y = e.clientY || (e.touches && e.touches[0].clientY);
-
+                const x = e.clientX || e.touches[0].clientX;
+                const y = e.clientY || e.touches[0].clientY;
                 ctx.globalCompositeOperation = 'destination-out';
                 ctx.beginPath();
-                ctx.arc(x, y, 60, 0, Math.PI * 2);
+                ctx.arc(x, y, 70, 0, Math.PI * 2);
                 ctx.fill();
                 
-                scratchedAmount++;
-                // Show button after they reveal the text
-                if(scratchedAmount > 40) { 
+                scratched++;
+                if(scratched > 30) {
                     const btn = document.querySelector(`#card-${currentChapter} .next-btn`);
                     if(btn) btn.classList.add('show');
                 }
@@ -172,7 +209,6 @@
             canvas.onmouseup = () => isDrawing = false;
             canvas.onmousemove = scratch;
             canvas.ontouchstart = () => isDrawing = true;
-            canvas.ontouchend = () => isDrawing = false;
             canvas.ontouchmove = scratch;
         }
     </script>
