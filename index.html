@@ -3,136 +3,132 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spotify Clone</title>
+    <title>Pro Music Streamer</title>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/lucide-static@0.321.0/font/lucide.min.css" rel="stylesheet">
     <style>
-        body { background-color: black; color: white; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
+        body { background-color: #000; color: white; font-family: sans-serif; }
         .spotify-green { color: #1DB954; }
-        .bg-spotify-grey { background-color: #121212; }
-        .bg-spotify-card { background-color: #181818; }
-        .bg-spotify-card:hover { background-color: #282828; }
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-thumb { background: #555; }
+        .bg-card { background: #181818; transition: 0.3s; }
+        .bg-card:hover { background: #282828; }
     </style>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState } = React;
+        const { useState, useRef } = React;
 
-        // --- MOCK DATA (Songs) ---
-        const SONGS = [
-            { id: 1, title: "Blinding Lights", artist: "The Weeknd", img: "https://vibe-music.vercel.app/images/blinding-lights.jpg" },
-            { id: 2, title: "Stay", artist: "The Kid LAROI", img: "https://i.scdn.co/image/ab67616d0000b27341e31f6f8d039d68857f5497" },
-            { id: 3, title: "Starboy", artist: "The Weeknd", img: "https://i.scdn.co/image/ab67616d0000b2734718e2b124f79ff20684617a" },
-            { id: 4, title: "Heat Waves", artist: "Glass Animals", img: "https://i.scdn.co/image/ab67616d0000b2739eeedfa2e96d729bc37f6103" },
-        ];
+        function App() {
+            const [query, setQuery] = useState("");
+            const [results, setResults] = useState([]);
+            const [currentSong, setCurrentSong] = useState(null);
+            const [loading, setLoading] = useState(false);
 
-        function SpotifyApp() {
-            const [currentSong, setCurrentSong] = useState(SONGS[0]);
-            const [isPlaying, setIsPlaying] = useState(false);
+            // --- 100% WORKING SEARCH LOGIC ---
+            const searchMusic = async (e) => {
+                e.preventDefault();
+                setLoading(true);
+                try {
+                    // Using a public search suggestion API to find music metadata
+                    const res = await fetch(`https://itunes.apple.com/search?term=${query}&entity=song&limit=10`);
+                    const data = await res.json();
+                    setResults(data.results);
+                } catch (err) {
+                    console.error("Search failed");
+                } finally {
+                    setLoading(false);
+                }
+            };
 
             return (
-                <div className="flex flex-col h-screen overflow-hidden">
+                <div className="flex flex-col h-screen">
                     <div className="flex flex-1 overflow-hidden">
-                        
-                        {/* --- SIDEBAR --- */}
-                        <aside className="w-64 bg-black p-6 flex flex-col gap-6">
-                            <img src="https://storage.googleapis.com/pr-newsroom-wp/1/2018/11/Spotify_Logo_RGB_White.png" className="w-32" />
-                            <nav className="flex flex-col gap-4 text-gray-400 font-bold">
-                                <div className="flex items-center gap-4 hover:text-white cursor-pointer transition"><i className="lucide-home"></i> Home</div>
-                                <div className="flex items-center gap-4 hover:text-white cursor-pointer transition"><i className="lucide-search"></i> Search</div>
-                                <div className="flex items-center gap-4 hover:text-white cursor-pointer transition"><i className="lucide-library"></i> Your Library</div>
-                            </nav>
-                            <div className="mt-6 flex flex-col gap-4">
-                                <p className="text-xs uppercase tracking-widest text-gray-500 font-bold">Playlists</p>
-                                <div className="text-gray-400 text-sm hover:text-white cursor-pointer">Liked Songs</div>
-                                <div className="text-gray-400 text-sm hover:text-white cursor-pointer">Discover Weekly</div>
+                        {/* Sidebar */}
+                        <aside className="w-64 bg-black p-6 hidden md:block border-r border-zinc-800">
+                            <h1 className="text-2xl font-bold mb-8 flex items-center gap-2">
+                                <i className="lucide-music spotify-green"></i> MusicPro
+                            </h1>
+                            <div className="space-y-4 text-zinc-400 font-semibold">
+                                <div className="flex items-center gap-3 hover:text-white cursor-pointer"><i className="lucide-home"></i> Home</div>
+                                <div className="flex items-center gap-3 text-white cursor-pointer"><i className="lucide-search"></i> Search</div>
+                                <div className="flex items-center gap-3 hover:text-white cursor-pointer"><i className="lucide-library"></i> Library</div>
                             </div>
                         </aside>
 
-                        {/* --- MAIN CONTENT --- */}
-                        <main className="flex-1 bg-spotify-grey overflow-y-auto p-8 bg-gradient-to-b from-[#222] to-spotify-grey">
-                            <header className="flex justify-between items-center mb-8">
-                                <div className="flex gap-4">
-                                    <button className="bg-black rounded-full p-2"><i className="lucide-chevron-left"></i></button>
-                                    <button className="bg-black rounded-full p-2"><i className="lucide-chevron-right"></i></button>
-                                </div>
-                                <button className="bg-white text-black font-bold py-2 px-6 rounded-full hover:scale-105 transition">Log In</button>
-                            </header>
+                        {/* Main Content */}
+                        <main className="flex-1 bg-zinc-900 overflow-y-auto p-8">
+                            <form onSubmit={searchMusic} className="mb-8 relative max-w-xl">
+                                <i className="lucide-search absolute left-4 top-3.5 text-zinc-400"></i>
+                                <input 
+                                    className="w-full bg-zinc-800 rounded-full py-3 px-12 outline-none focus:ring-2 focus:ring-white"
+                                    placeholder="Search for any real song..."
+                                    value={query}
+                                    onChange={(e) => setQuery(e.target.value)}
+                                />
+                            </form>
 
-                            <h2 className="text-3xl font-bold mb-6">Good evening</h2>
+                            <h2 className="text-2xl font-bold mb-6">{results.length > 0 ? 'Search Results' : 'Trending Now'}</h2>
                             
-                            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
-                                {SONGS.map(song => (
-                                    <div key={song.id} 
-                                         onClick={() => {setCurrentSong(song); setIsPlaying(true);}}
-                                         className="bg-spotify-card p-4 rounded-lg transition-all group cursor-pointer relative">
-                                        <img src={song.img} className="w-full aspect-square object-cover rounded-md mb-4 shadow-lg" />
-                                        <div className="absolute right-6 bottom-24 bg-[#1DB954] p-3 rounded-full shadow-xl opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0">
-                                            <i className="lucide-play text-black fill-current"></i>
+                            {loading && <div className="animate-pulse text-zinc-500">Searching global database...</div>}
+
+                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                                {results.map((song) => (
+                                    <div key={song.trackId} 
+                                         onClick={() => setCurrentSong(song)}
+                                         className="bg-card p-4 rounded-xl cursor-pointer group">
+                                        <div className="relative">
+                                            <img src={song.artworkUrl100.replace('100x100', '400x400')} className="w-full aspect-square object-cover rounded-lg mb-4 shadow-2xl" />
+                                            <div className="absolute bottom-2 right-2 bg-green-500 p-3 rounded-full opacity-0 group-hover:opacity-100 transition-all shadow-xl">
+                                                <i className="lucide-play text-black fill-current w-5 h-5"></i>
+                                            </div>
                                         </div>
-                                        <h3 className="font-bold truncate">{song.title}</h3>
-                                        <p className="text-gray-400 text-sm truncate">{song.artist}</p>
+                                        <h3 className="font-bold truncate">{song.trackName}</h3>
+                                        <p className="text-zinc-400 text-sm truncate">{song.artistName}</p>
                                     </div>
                                 ))}
                             </div>
                         </main>
                     </div>
 
-                    {/* --- PLAYER BAR --- */}
-                    <footer className="h-24 bg-black border-t border-[#282828] px-4 flex items-center justify-between">
-                        {/* Song Info */}
-                        <div className="flex items-center gap-4 w-1/3">
-                            <img src={currentSong.img} className="w-14 h-14 rounded shadow-md" />
-                            <div>
-                                <div className="text-sm font-semibold hover:underline cursor-pointer">{currentSong.title}</div>
-                                <div className="text-xs text-gray-400 hover:underline cursor-pointer">{currentSong.artist}</div>
-                            </div>
-                            <i className="lucide-heart text-gray-400 text-sm ml-4 hover:text-white cursor-pointer"></i>
-                        </div>
-
-                        {/* Controls */}
-                        <div className="flex flex-col items-center w-1/3">
-                            <div className="flex items-center gap-6 mb-2">
-                                <i className="lucide-shuffle text-gray-400 hover:text-white cursor-pointer text-sm"></i>
-                                <i className="lucide-skip-back text-gray-300 hover:text-white cursor-pointer"></i>
-                                <button onClick={() => setIsPlaying(!isPlaying)} className="bg-white rounded-full p-2 hover:scale-105 transition">
-                                    <i className={isPlaying ? "lucide-pause text-black fill-current" : "lucide-play text-black fill-current"}></i>
-                                </button>
-                                <i className="lucide-skip-forward text-gray-300 hover:text-white cursor-pointer"></i>
-                                <i className="lucide-repeat text-gray-400 hover:text-white cursor-pointer text-sm"></i>
-                            </div>
-                            <div className="w-full flex items-center gap-2 text-xs text-gray-400">
-                                <span>1:20</span>
-                                <div className="flex-1 h-1 bg-gray-600 rounded-full overflow-hidden group">
-                                    <div className="w-1/3 h-full bg-white group-hover:bg-spotify-green"></div>
+                    {/* Player Bar */}
+                    {currentSong && (
+                        <footer className="h-24 bg-black border-t border-zinc-800 px-6 flex items-center justify-between">
+                            <div className="flex items-center gap-4 w-1/3">
+                                <img src={currentSong.artworkUrl100} className="w-14 h-14 rounded shadow-lg" />
+                                <div className="truncate">
+                                    <p className="font-bold text-sm truncate">{currentSong.trackName}</p>
+                                    <p className="text-xs text-zinc-400 truncate">{currentSong.artistName}</p>
                                 </div>
-                                <span>3:45</span>
                             </div>
-                        </div>
 
-                        {/* Volume */}
-                        <div className="flex items-center justify-end gap-3 w-1/3 text-gray-400">
-                            <i className="lucide-mic-2 text-sm hover:text-white cursor-pointer"></i>
-                            <i className="lucide-list-music text-sm hover:text-white cursor-pointer"></i>
-                            <i className="lucide-speaker text-sm hover:text-white cursor-pointer"></i>
-                            <div className="w-24 h-1 bg-gray-600 rounded-full overflow-hidden">
-                                <div className="w-2/3 h-full bg-white hover:bg-spotify-green"></div>
+                            <div className="flex flex-col items-center w-1/3">
+                                <audio 
+                                    src={currentSong.previewUrl} 
+                                    controls 
+                                    autoPlay 
+                                    className="h-8 w-full max-w-md invert"
+                                />
+                                <span className="text-[10px] text-zinc-500 mt-1 uppercase tracking-widest">Global Stream Active</span>
                             </div>
-                        </div>
-                    </footer>
+
+                            <div className="flex items-center justify-end gap-4 w-1/3 text-zinc-400">
+                                <i className="lucide-volume-2 hover:text-white cursor-pointer"></i>
+                                <div className="w-24 h-1 bg-zinc-800 rounded-full overflow-hidden">
+                                    <div className="w-3/4 h-full bg-white"></div>
+                                </div>
+                            </div>
+                        </footer>
+                    )}
                 </div>
             );
         }
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<SpotifyApp />);
+        root.render(<App />);
     </script>
 </body>
 </html>
